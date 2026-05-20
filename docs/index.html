@@ -1170,15 +1170,27 @@
       }
 
       function normalizeReading(raw) {
-        const dateValue =
-          raw.date ?? raw.dato ?? raw.Date ?? raw.Dato ?? raw["Dato ISO"] ?? raw["date"];
-        const valueValue =
-          raw.value ??
-          raw.verdi ??
-          raw.Value ??
-          raw.Verdi ??
-          raw["Verdi mmol/L"] ??
-          raw["Blodsukker"];
+        const values = Object.values(raw);
+        const dateValue = getImportField(raw, [
+          "date",
+          "dato",
+          "dato iso",
+          "måledato",
+          "maledato",
+          "registrert",
+          "registreringsdato",
+        ]) ?? values.find((item) => parseImportedDate(item));
+        const valueValue = getImportField(raw, [
+          "value",
+          "verdi",
+          "verdi mmol/l",
+          "mmol/l",
+          "blodsukker",
+          "blodsukkerverdi",
+          "måling",
+          "maling",
+          "glukose",
+        ]) ?? values.find((item) => Number.isFinite(parseImportedNumber(item)));
         const parsedDate = parseImportedDate(dateValue);
         const numericValue = parseImportedNumber(valueValue);
 
@@ -1190,15 +1202,27 @@
           id: crypto.randomUUID(),
           date: parsedDate.toISOString(),
           value: Math.round(numericValue * 10) / 10,
-          context:
-            raw.context ??
-            raw.tidspunkt ??
-            raw.Context ??
-            raw.Tidspunkt ??
-            raw.Type ??
-            "Annet",
-          note: String(raw.note ?? raw.notat ?? raw.Note ?? raw.Notat ?? "").trim(),
+          context: getImportField(raw, ["context", "tidspunkt", "type", "måletidspunkt", "maletidspunkt"]) || "Annet",
+          note: String(getImportField(raw, ["note", "notat", "kommentar", "merknad"]) || "").trim(),
         };
+      }
+
+      function normalizeImportKey(key) {
+        return String(key || "")
+          .replace(/^\uFEFF/, "")
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s+/g, " ");
+      }
+
+      function getImportField(raw, aliases) {
+        const normalizedAliases = new Set(aliases.map(normalizeImportKey));
+        const match = Object.entries(raw).find(([key]) =>
+          normalizedAliases.has(normalizeImportKey(key))
+        );
+        return match ? match[1] : undefined;
       }
 
       function parseImportedDate(value) {
@@ -1297,7 +1321,7 @@
         if (row.some((item) => item.trim())) rows.push(row);
         if (rows.length < 2) return [];
 
-        const headers = rows[0].map((header) => header.trim());
+        const headers = rows[0].map((header) => header.replace(/^\uFEFF/, "").trim());
         return rows.slice(1).map((values) => {
           const item = {};
           headers.forEach((header, index) => {
