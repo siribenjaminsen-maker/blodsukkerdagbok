@@ -1,4 +1,4 @@
-const CACHE_NAME = "blodsukkerdagbok-v1";
+const CACHE_NAME = "blodsukkerdagbok-v2";
 const APP_FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
