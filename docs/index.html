@@ -721,6 +721,9 @@
                 <h2>Graf</h2>
                 <p class="hint">Målinger sortert etter dato. Rosa punkter er lørdag, søndag og norske helligdager.</p>
               </div>
+              <button class="button secondary compact" id="openChartModal" type="button">
+                Forstørr graf
+              </button>
             </div>
             <div class="chart-wrap" id="chartWrap">
               <canvas id="chart" width="900" height="380" aria-label="Blodsukkergraf"></canvas>
@@ -846,6 +849,7 @@
         chart: document.querySelector("#chart"),
         largeChart: document.querySelector("#largeChart"),
         chartModal: document.querySelector("#chartModal"),
+        openChartModal: document.querySelector("#openChartModal"),
         closeChartModal: document.querySelector("#closeChartModal"),
         chartTooltip: document.querySelector("#chartTooltip"),
         chartEmpty: document.querySelector("#chartEmpty"),
@@ -1214,7 +1218,10 @@
 
       function openChartModal() {
         const sorted = getSortedReadings();
-        if (!sorted.length) return;
+        if (!sorted.length) {
+          elements.backupStatus.textContent = "Legg inn minst én måling før grafen kan forstørres.";
+          return;
+        }
 
         hideChartTooltip();
         elements.chartModal.hidden = false;
@@ -1713,6 +1720,10 @@
       elements.chart.addEventListener("mouseleave", hideChartTooltip);
       elements.chart.addEventListener("blur", hideChartTooltip);
       elements.chart.addEventListener("click", openChartModal);
+      elements.chart.addEventListener("pointerup", (event) => {
+        if (event.pointerType === "touch") openChartModal();
+      });
+      elements.openChartModal.addEventListener("click", openChartModal);
       elements.closeChartModal.addEventListener("click", closeChartModal);
       elements.chartModal.addEventListener("click", (event) => {
         if (event.target === elements.chartModal) closeChartModal();
