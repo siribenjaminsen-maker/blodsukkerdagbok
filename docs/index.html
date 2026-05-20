@@ -104,7 +104,7 @@
         width: 1px;
         height: 1px;
         opacity: 0;
-        pointer-events: none;
+        overflow: hidden;
       }
 
       .layout {
@@ -497,7 +497,9 @@
           </p>
         </div>
         <div class="toolbar" aria-label="Verktøy">
-          <button class="button secondary" id="importButton" type="button">Importer CSV/Excel</button>
+          <label class="button secondary" id="importButton" for="importFile" role="button" tabindex="0">
+            Importer CSV/Excel
+          </label>
           <button class="button secondary" id="exportButton" type="button">Eksporter CSV</button>
           <button class="button secondary" id="clearButton" type="button">Tøm dagbok</button>
           <input
@@ -644,7 +646,9 @@
             </div>
             <div class="backup-actions" aria-label="Backup">
               <button class="button secondary" id="cloudBackupButton" type="button">Lagre sky-backup</button>
-              <button class="button secondary" id="restoreBackupButton" type="button">Gjenopprett backup</button>
+              <label class="button secondary" id="restoreBackupButton" for="backupFile" role="button" tabindex="0">
+                Gjenopprett backup
+              </label>
               <input class="file-input" id="backupFile" type="file" accept=".json,application/json" />
             </div>
           </div>
@@ -1419,7 +1423,12 @@
         elements.message.textContent = "Redigering avbrutt.";
         render();
       });
-      elements.importButton.addEventListener("click", () => elements.importFile.click());
+      elements.importButton.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          elements.importFile.click();
+        }
+      });
       elements.importFile.addEventListener("change", (event) => {
         const file = event.target.files?.[0];
         if (file) importFile(file);
@@ -1427,7 +1436,12 @@
       elements.exportButton.addEventListener("click", exportCsv);
       elements.clearButton.addEventListener("click", clearDiary);
       elements.cloudBackupButton.addEventListener("click", saveCloudBackup);
-      elements.restoreBackupButton.addEventListener("click", () => elements.backupFile.click());
+      elements.restoreBackupButton.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          elements.backupFile.click();
+        }
+      });
       elements.backupFile.addEventListener("change", (event) => {
         const file = event.target.files?.[0];
         if (file) restoreBackup(file);
