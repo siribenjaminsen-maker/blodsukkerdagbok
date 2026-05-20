@@ -153,7 +153,8 @@
       }
 
       input,
-      select {
+      select,
+      textarea {
         width: 100%;
         min-height: 46px;
         border: 1px solid #c9d4d9;
@@ -164,8 +165,14 @@
         outline: none;
       }
 
+      textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+
       input:focus,
-      select:focus {
+      select:focus,
+      textarea:focus {
         border-color: var(--brand);
         box-shadow: 0 0 0 3px rgba(18, 107, 99, 0.14);
       }
@@ -342,6 +349,20 @@
         margin-top: 18px;
       }
 
+      .import-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .import-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+
       .backup-grid {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
@@ -429,6 +450,7 @@
       @media (max-width: 920px) {
         .topbar,
         .layout,
+        .import-grid,
         .backup-grid {
           display: block;
         }
@@ -440,6 +462,10 @@
 
         .backup-actions {
           justify-content: flex-start;
+          margin-top: 16px;
+        }
+
+        .import-grid > * + * {
           margin-top: 16px;
         }
 
@@ -610,6 +636,37 @@
 
       <section class="panel history">
         <div class="panel-body">
+          <div class="import-grid">
+            <div>
+              <h2>Import</h2>
+              <p class="hint">
+                Velg en CSV/Excel-fil, eller lim inn CSV-tekst direkte hvis mobilen ikke åpner filvelgeren.
+              </p>
+              <div class="import-actions">
+                <label class="button secondary" for="importFile" role="button" tabindex="0">
+                  Velg fil
+                </label>
+                <button class="button secondary" id="clearPasteButton" type="button">
+                  Tøm tekstfelt
+                </button>
+              </div>
+            </div>
+            <div>
+              <label for="pasteImport">Lim inn CSV</label>
+              <textarea
+                id="pasteImport"
+                placeholder="Dato;Verdi mmol/L;Tidspunkt;Notat&#10;2026-05-20;7,4;Fastende;"
+              ></textarea>
+              <div class="import-actions">
+                <button class="button" id="importPasteButton" type="button">Importer tekst</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel history">
+        <div class="panel-body">
           <div class="list-head">
             <div>
               <h2>Målinger</h2>
@@ -683,6 +740,9 @@
         countLabel: document.querySelector("#countLabel"),
         importButton: document.querySelector("#importButton"),
         importFile: document.querySelector("#importFile"),
+        pasteImport: document.querySelector("#pasteImport"),
+        importPasteButton: document.querySelector("#importPasteButton"),
+        clearPasteButton: document.querySelector("#clearPasteButton"),
         exportButton: document.querySelector("#exportButton"),
         clearButton: document.querySelector("#clearButton"),
         cloudBackupButton: document.querySelector("#cloudBackupButton"),
@@ -1269,6 +1329,28 @@
         }
       }
 
+      function importPastedText() {
+        elements.message.textContent = "";
+        elements.backupStatus.textContent = "";
+        const text = elements.pasteImport.value.trim();
+
+        if (!text) {
+          elements.backupStatus.textContent = "Lim inn CSV-tekst før du importerer.";
+          return;
+        }
+
+        try {
+          const imported = parseDelimited(text).map(normalizeReading).filter(Boolean);
+          const count = mergeReadings(imported);
+          elements.backupStatus.textContent = count
+            ? `Importerte ${count} nye målinger fra innlimt tekst.`
+            : "Fant ingen nye gyldige målinger i teksten.";
+          if (count) elements.pasteImport.value = "";
+        } catch {
+          elements.backupStatus.textContent = "Kunne ikke lese CSV-teksten.";
+        }
+      }
+
       async function readExcelFile(file) {
         const XLSX = await loadExcelLibrary();
         const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
@@ -1432,6 +1514,11 @@
       elements.importFile.addEventListener("change", (event) => {
         const file = event.target.files?.[0];
         if (file) importFile(file);
+      });
+      elements.importPasteButton.addEventListener("click", importPastedText);
+      elements.clearPasteButton.addEventListener("click", () => {
+        elements.pasteImport.value = "";
+        elements.backupStatus.textContent = "Tekstfeltet er tømt.";
       });
       elements.exportButton.addEventListener("click", exportCsv);
       elements.clearButton.addEventListener("click", clearDiary);
