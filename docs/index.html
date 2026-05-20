@@ -1,1 +1,1447 @@
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blodsukkerdagbok</title>
+    <meta name="theme-color" content="#126b63" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Blodsukker" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icon.svg" />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7f8;
+        --panel: #ffffff;
+        --panel-soft: #eef3f5;
+        --text: #142126;
+        --muted: #5e6b72;
+        --line: #d8e0e4;
+        --brand: #126b63;
+        --brand-dark: #0b4f49;
+        --accent: #d97b40;
+        --danger: #b3261e;
+        --shadow: 0 14px 36px rgba(20, 33, 38, 0.08);
+      }
 
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      main {
+        width: min(1180px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 28px 0 48px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        color: var(--brand-dark);
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        max-width: 720px;
+        font-size: clamp(2rem, 4vw, 3.4rem);
+        line-height: 1.03;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 650px;
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 1.04rem;
+        line-height: 1.55;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .file-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 360px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .panel-body {
+        padding: 20px;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 15px;
+      }
+
+      .previous-reading {
+        border-radius: 8px;
+        background: #e8f4f2;
+        color: var(--brand-dark);
+        padding: 12px;
+        font-size: 0.93rem;
+        line-height: 1.35;
+      }
+
+      .previous-reading strong {
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 7px;
+        color: #34454c;
+        font-size: 0.9rem;
+        font-weight: 750;
+      }
+
+      input,
+      select {
+        width: 100%;
+        min-height: 46px;
+        border: 1px solid #c9d4d9;
+        border-radius: 8px;
+        background: #fff;
+        color: var(--text);
+        padding: 10px 12px;
+        outline: none;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px rgba(18, 107, 99, 0.14);
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .button {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 10px 14px;
+        color: #fff;
+        background: var(--brand);
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .button:hover {
+        background: var(--brand-dark);
+      }
+
+      .button.secondary {
+        color: var(--text);
+        border-color: var(--line);
+        background: #fff;
+      }
+
+      .button.secondary:hover {
+        background: var(--panel-soft);
+      }
+
+      .button.danger {
+        width: 38px;
+        min-height: 38px;
+        padding: 0;
+        color: var(--danger);
+        border-color: transparent;
+        background: transparent;
+      }
+
+      .button.danger:hover {
+        background: #fbe9e7;
+      }
+
+      .button.compact {
+        min-height: 36px;
+        padding: 7px 10px;
+        font-size: 0.9rem;
+      }
+
+      .form-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .row-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+        white-space: nowrap;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .stat {
+        min-height: 92px;
+        border-radius: 8px;
+        background: var(--panel-soft);
+        padding: 14px;
+      }
+
+      .stat span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.85rem;
+        font-weight: 700;
+      }
+
+      .stat strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 1.45rem;
+        line-height: 1.15;
+      }
+
+      .chart-head,
+      .list-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      h2 {
+        font-size: 1.24rem;
+      }
+
+      .hint {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .chart-wrap {
+        position: relative;
+        width: 100%;
+        min-height: 380px;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 380px;
+      }
+
+      .chart-tooltip {
+        position: absolute;
+        z-index: 2;
+        max-width: min(260px, calc(100% - 24px));
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: 0 12px 28px rgba(20, 33, 38, 0.16);
+        color: var(--text);
+        padding: 10px 12px;
+        font-size: 0.9rem;
+        line-height: 1.35;
+        pointer-events: none;
+        transform: translate(-50%, calc(-100% - 12px));
+      }
+
+      .chart-tooltip strong {
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      .chart-tooltip span {
+        display: block;
+        color: var(--muted);
+      }
+
+      .empty {
+        display: grid;
+        min-height: 220px;
+        place-items: center;
+        border: 1px dashed #bdcbd1;
+        border-radius: 8px;
+        background: #fafcfc;
+        color: var(--muted);
+        text-align: center;
+        padding: 20px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .history {
+        margin-top: 18px;
+      }
+
+      .backup-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .backup-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .status {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 0.92rem;
+        min-height: 1.25em;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      table {
+        width: 100%;
+        min-width: 680px;
+        border-collapse: collapse;
+        background: #fff;
+        text-align: left;
+      }
+
+      th,
+      td {
+        padding: 13px 14px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: middle;
+      }
+
+      th {
+        background: #edf2f4;
+        color: #415259;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .value-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        background: #e8f4f2;
+        color: var(--brand-dark);
+        padding: 5px 10px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .message {
+        margin-top: 10px;
+        color: var(--danger);
+        font-size: 0.9rem;
+        min-height: 1.2em;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      @media (max-width: 920px) {
+        .topbar,
+        .layout,
+        .backup-grid {
+          display: block;
+        }
+
+        .toolbar {
+          justify-content: flex-start;
+          margin-top: 16px;
+        }
+
+        .backup-actions {
+          justify-content: flex-start;
+          margin-top: 16px;
+        }
+
+        .layout > * + * {
+          margin-top: 18px;
+        }
+      }
+
+      @media (max-width: 540px) {
+        main {
+          width: min(100% - 18px, 1180px);
+          padding-top: 16px;
+        }
+
+        .panel-body {
+          padding: 15px;
+        }
+
+        .split,
+        .stats,
+        .form-actions {
+          grid-template-columns: 1fr;
+        }
+
+        .toolbar .button {
+          flex: 1 1 140px;
+        }
+
+        .backup-actions .button {
+          flex: 1 1 160px;
+        }
+
+        canvas {
+          height: 320px;
+        }
+
+        .chart-wrap {
+          min-height: 320px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="topbar">
+        <div>
+          <p class="eyebrow" aria-label="Blodsukkerdagbok">
+            <span aria-hidden="true">●</span>
+            Blodsukkerdagbok
+          </p>
+          <h1>Registrer målinger og følg utviklingen over tid</h1>
+          <p class="lead">
+            En enkel dagbok for blodsukkerverdier i mmol/L. Data lagres bare i
+            nettleseren din på denne maskinen.
+          </p>
+        </div>
+        <div class="toolbar" aria-label="Verktøy">
+          <button class="button secondary" id="importButton" type="button">Importer CSV/Excel</button>
+          <button class="button secondary" id="exportButton" type="button">Eksporter CSV</button>
+          <button class="button secondary" id="clearButton" type="button">Tøm dagbok</button>
+          <input
+            class="file-input"
+            id="importFile"
+            type="file"
+            accept=".csv,.txt,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+          />
+        </div>
+      </header>
+
+      <section class="layout" aria-label="Blodsukkerapp">
+        <aside class="panel">
+          <div class="panel-body">
+            <form class="form-grid" id="readingForm">
+              <div class="previous-reading" id="previousReading">
+                <strong>Forrige registrering</strong>
+                <span>Ingen målinger er registrert ennå.</span>
+              </div>
+
+              <div>
+                <label for="date">Dato</label>
+                <input id="date" name="date" type="date" required />
+              </div>
+
+              <div class="split">
+                <div>
+                  <label for="value">Verdi</label>
+                  <input
+                    id="value"
+                    name="value"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="7,4"
+                    required
+                  />
+                </div>
+                <div>
+                  <label for="context">Tidspunkt</label>
+                  <select id="context" name="context">
+                    <option value="Fastende">Fastende</option>
+                    <option value="Før måltid">Før måltid</option>
+                    <option value="Etter måltid">Etter måltid</option>
+                    <option value="Før leggetid">Før leggetid</option>
+                    <option value="Annet">Annet</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label for="note">Notat</label>
+                <input
+                  id="note"
+                  name="note"
+                  autocomplete="off"
+                  placeholder="Valgfritt, f.eks. etter middag"
+                />
+              </div>
+
+              <div class="form-actions">
+                <button class="button" id="submitButton" type="submit">Legg til måling</button>
+                <button class="button secondary" id="cancelEditButton" type="button" hidden>
+                  Avbryt redigering
+                </button>
+              </div>
+              <p class="message" id="formMessage" role="status" aria-live="polite"></p>
+            </form>
+
+            <div class="stats" aria-label="Nøkkeltall">
+              <div class="stat">
+                <span>Siste</span>
+                <strong id="latestStat">-</strong>
+              </div>
+              <div class="stat">
+                <span>Snitt</span>
+                <strong id="averageStat">-</strong>
+              </div>
+              <div class="stat">
+                <span>Laveste</span>
+                <strong id="minStat">-</strong>
+              </div>
+              <div class="stat">
+                <span>Høyeste</span>
+                <strong id="maxStat">-</strong>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="panel">
+          <div class="panel-body">
+            <div class="chart-head">
+              <div>
+                <h2>Graf</h2>
+                <p class="hint">Målinger sortert etter dato. Rosa punkter er lørdag, søndag og norske helligdager.</p>
+              </div>
+            </div>
+            <div class="chart-wrap" id="chartWrap">
+              <canvas id="chart" width="900" height="380" aria-label="Blodsukkergraf"></canvas>
+              <div class="chart-tooltip" id="chartTooltip" hidden></div>
+              <div class="empty" id="chartEmpty" hidden>
+                Legg inn første måling for å vise grafen.
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel history">
+        <div class="panel-body">
+          <div class="list-head">
+            <div>
+              <h2>Målinger</h2>
+              <p class="hint" id="countLabel">Ingen registrerte målinger.</p>
+            </div>
+          </div>
+          <div class="table-wrap" id="tableWrap" hidden>
+            <table>
+              <thead>
+                <tr>
+                  <th>Dato</th>
+                  <th>Verdi</th>
+                  <th>Tidspunkt</th>
+                  <th>Notat</th>
+                  <th>Handling</th>
+                </tr>
+              </thead>
+              <tbody id="readingRows"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="tableEmpty">Ingen målinger er registrert ennå.</p>
+        </div>
+      </section>
+
+      <section class="panel history">
+        <div class="panel-body">
+          <div class="backup-grid">
+            <div>
+              <h2>Backup</h2>
+              <p class="hint">
+                Lagre en komplett backupfil i en synket mappe, for eksempel OneDrive,
+                Google Drive eller Dropbox.
+              </p>
+            </div>
+            <div class="backup-actions" aria-label="Backup">
+              <button class="button secondary" id="cloudBackupButton" type="button">Lagre sky-backup</button>
+              <button class="button secondary" id="restoreBackupButton" type="button">Gjenopprett backup</button>
+              <input class="file-input" id="backupFile" type="file" accept=".json,application/json" />
+            </div>
+          </div>
+          <p class="status" id="backupStatus" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const STORAGE_KEY = "blodsukkerdagbok_v2";
+
+      const elements = {
+        form: document.querySelector("#readingForm"),
+        date: document.querySelector("#date"),
+        value: document.querySelector("#value"),
+        context: document.querySelector("#context"),
+        note: document.querySelector("#note"),
+        previousReading: document.querySelector("#previousReading"),
+        submitButton: document.querySelector("#submitButton"),
+        cancelEditButton: document.querySelector("#cancelEditButton"),
+        message: document.querySelector("#formMessage"),
+        latest: document.querySelector("#latestStat"),
+        average: document.querySelector("#averageStat"),
+        min: document.querySelector("#minStat"),
+        max: document.querySelector("#maxStat"),
+        chart: document.querySelector("#chart"),
+        chartTooltip: document.querySelector("#chartTooltip"),
+        chartEmpty: document.querySelector("#chartEmpty"),
+        rows: document.querySelector("#readingRows"),
+        tableWrap: document.querySelector("#tableWrap"),
+        tableEmpty: document.querySelector("#tableEmpty"),
+        countLabel: document.querySelector("#countLabel"),
+        importButton: document.querySelector("#importButton"),
+        importFile: document.querySelector("#importFile"),
+        exportButton: document.querySelector("#exportButton"),
+        clearButton: document.querySelector("#clearButton"),
+        cloudBackupButton: document.querySelector("#cloudBackupButton"),
+        restoreBackupButton: document.querySelector("#restoreBackupButton"),
+        backupFile: document.querySelector("#backupFile"),
+        backupStatus: document.querySelector("#backupStatus"),
+      };
+
+      let readings = loadReadings();
+      let editingId = null;
+      let chartPoints = [];
+
+      function getLocalDateValue() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        return now.toISOString().slice(0, 10);
+      }
+
+      function parseDateInput(value) {
+        return new Date(`${value}T12:00:00`);
+      }
+
+      function dateInputValue(isoString) {
+        return formatExportDate(isoString);
+      }
+
+      function formatDisplayDate(isoString) {
+        return new Intl.DateTimeFormat("nb-NO", {
+          weekday: "long",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).format(new Date(isoString));
+      }
+
+      function formatExportDate(isoString) {
+        return new Intl.DateTimeFormat("sv-SE", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(new Date(isoString));
+      }
+
+      function formatWeekday(isoString) {
+        return new Intl.DateTimeFormat("nb-NO", {
+          weekday: "long",
+        }).format(new Date(isoString));
+      }
+
+      function getDateKey(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function addDays(date, days) {
+        const copy = new Date(date);
+        copy.setDate(copy.getDate() + days);
+        return copy;
+      }
+
+      function getEasterSunday(year) {
+        const a = year % 19;
+        const b = Math.floor(year / 100);
+        const c = year % 100;
+        const d = Math.floor(b / 4);
+        const e = b % 4;
+        const f = Math.floor((b + 8) / 25);
+        const g = Math.floor((b - f + 1) / 3);
+        const h = (19 * a + b - d - g + 15) % 30;
+        const i = Math.floor(c / 4);
+        const k = c % 4;
+        const l = (32 + 2 * e + 2 * i - h - k) % 7;
+        const m = Math.floor((a + 11 * h + 22 * l) / 451);
+        const month = Math.floor((h + l - 7 * m + 114) / 31);
+        const day = ((h + l - 7 * m + 114) % 31) + 1;
+        return new Date(year, month - 1, day);
+      }
+
+      function getNorwegianHolidayKeys(year) {
+        const easter = getEasterSunday(year);
+        const fixed = [
+          `${year}-01-01`,
+          `${year}-05-01`,
+          `${year}-05-17`,
+          `${year}-12-25`,
+          `${year}-12-26`,
+        ];
+        const movable = [-3, -2, 0, 1, 39, 49, 50].map((offset) =>
+          getDateKey(addDays(easter, offset))
+        );
+        return new Set([...fixed, ...movable]);
+      }
+
+      function isWeekendOrHoliday(isoString) {
+        const date = new Date(isoString);
+        const day = date.getDay();
+        if (day === 0 || day === 6) return true;
+        return getNorwegianHolidayKeys(date.getFullYear()).has(getDateKey(date));
+      }
+
+      function formatShortDate(isoString) {
+        return new Intl.DateTimeFormat("nb-NO", {
+          day: "2-digit",
+          month: "2-digit",
+        }).format(new Date(isoString));
+      }
+
+      function loadReadings() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          return saved ? JSON.parse(saved) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveReadings() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(readings));
+      }
+
+      function getSortedReadings() {
+        return [...readings].sort((a, b) => new Date(a.date) - new Date(b.date));
+      }
+
+      function formatValue(value) {
+        return Number(value).toLocaleString("nb-NO", {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1,
+        });
+      }
+
+      function render() {
+        const sorted = getSortedReadings();
+        renderPreviousReading(sorted);
+        renderStats(sorted);
+        renderTable(sorted);
+        renderChart(sorted);
+      }
+
+      function renderPreviousReading(sorted) {
+        const latest = readings.filter((reading) => reading.id !== editingId).at(-1);
+        const text = elements.previousReading.querySelector("span");
+        text.textContent = latest
+          ? `${formatDisplayDate(latest.date)} - ${formatValue(latest.value)} mmol/L`
+          : "Ingen målinger er registrert ennå.";
+      }
+
+      function renderStats(sorted) {
+        if (!sorted.length) {
+          elements.latest.textContent = "-";
+          elements.average.textContent = "-";
+          elements.min.textContent = "-";
+          elements.max.textContent = "-";
+          return;
+        }
+
+        const values = sorted.map((reading) => Number(reading.value));
+        const sum = values.reduce((total, current) => total + current, 0);
+        elements.latest.textContent = `${formatValue(sorted.at(-1).value)} mmol/L`;
+        elements.average.textContent = `${formatValue(sum / values.length)} mmol/L`;
+        elements.min.textContent = `${formatValue(Math.min(...values))} mmol/L`;
+        elements.max.textContent = `${formatValue(Math.max(...values))} mmol/L`;
+      }
+
+      function renderTable(sorted) {
+        const newestFirst = [...sorted].reverse();
+        elements.rows.innerHTML = "";
+        elements.tableWrap.hidden = !newestFirst.length;
+        elements.tableEmpty.hidden = Boolean(newestFirst.length);
+        elements.countLabel.textContent = newestFirst.length
+          ? `${newestFirst.length} registrerte målinger.`
+          : "Ingen registrerte målinger.";
+
+        newestFirst.forEach((reading) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${formatDisplayDate(reading.date)}</td>
+            <td><span class="value-pill">${formatValue(reading.value)} mmol/L</span></td>
+            <td>${escapeHtml(reading.context || "Annet")}</td>
+            <td>${escapeHtml(reading.note || "-")}</td>
+            <td>
+              <div class="row-actions">
+                <button class="button secondary compact" type="button" data-edit-id="${reading.id}">
+                  Rediger
+                </button>
+                <button class="button danger" type="button" aria-label="Slett måling" data-delete-id="${reading.id}">
+                  ×
+                </button>
+              </div>
+            </td>
+          `;
+          elements.rows.appendChild(row);
+        });
+      }
+
+      function renderChart(sorted) {
+        const canvas = elements.chart;
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+
+        elements.chart.hidden = !sorted.length;
+        elements.chartEmpty.hidden = Boolean(sorted.length);
+        hideChartTooltip();
+        chartPoints = [];
+        ctx.clearRect(0, 0, width, height);
+
+        if (!sorted.length) return;
+
+        const values = sorted.map((reading) => Number(reading.value));
+        const maxValue = Math.max(10, Math.ceil(Math.max(...values) + 1));
+        const minValue = Math.min(0, Math.floor(Math.min(...values) - 1));
+        const padding = { top: 24, right: 28, bottom: 52, left: 54 };
+        const plotWidth = width - padding.left - padding.right;
+        const plotHeight = height - padding.top - padding.bottom;
+
+        const xFor = (index) =>
+          sorted.length === 1
+            ? padding.left + plotWidth / 2
+            : padding.left + (index / (sorted.length - 1)) * plotWidth;
+        const yFor = (value) =>
+          padding.top + ((maxValue - value) / (maxValue - minValue)) * plotHeight;
+
+        ctx.font = "13px Inter, system-ui, sans-serif";
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#d8e0e4";
+        ctx.fillStyle = "#5e6b72";
+
+        for (let i = 0; i <= 4; i += 1) {
+          const value = minValue + ((maxValue - minValue) / 4) * i;
+          const y = yFor(value);
+          ctx.beginPath();
+          ctx.moveTo(padding.left, y);
+          ctx.lineTo(width - padding.right, y);
+          ctx.stroke();
+          ctx.fillText(formatValue(value), 8, y + 4);
+        }
+
+        drawReferenceLine(ctx, yFor(4), width, padding, "4");
+        drawReferenceLine(ctx, yFor(10), width, padding, "10");
+
+        ctx.strokeStyle = "#126b63";
+        ctx.lineWidth = 4;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        sorted.forEach((reading, index) => {
+          const x = xFor(index);
+          const y = yFor(Number(reading.value));
+          if (index === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+
+        sorted.forEach((reading, index) => {
+          const x = xFor(index);
+          const y = yFor(Number(reading.value));
+          const specialDay = isWeekendOrHoliday(reading.date);
+          chartPoints.push({ x, y, reading, specialDay });
+          ctx.beginPath();
+          ctx.fillStyle = "#ffffff";
+          ctx.strokeStyle = specialDay ? "#db5c92" : "#126b63";
+          ctx.lineWidth = 3;
+          ctx.arc(x, y, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+
+        ctx.fillStyle = "#5e6b72";
+        ctx.textAlign = "center";
+        const labelEvery = Math.max(1, Math.ceil(sorted.length / 7));
+        sorted.forEach((reading, index) => {
+          if (index % labelEvery === 0 || index === sorted.length - 1) {
+            ctx.fillText(formatShortDate(reading.date), xFor(index), height - 18);
+          }
+        });
+        ctx.textAlign = "left";
+      }
+
+      function handleChartHover(event) {
+        if (!chartPoints.length) {
+          hideChartTooltip();
+          return;
+        }
+
+        const rect = elements.chart.getBoundingClientRect();
+        const scaleX = elements.chart.width / rect.width;
+        const scaleY = elements.chart.height / rect.height;
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+        const closest = chartPoints.reduce(
+          (best, point) => {
+            const distance = Math.hypot(point.x - x, point.y - y);
+            return distance < best.distance ? { point, distance } : best;
+          },
+          { point: null, distance: Number.POSITIVE_INFINITY }
+        );
+
+        if (!closest.point || closest.distance > 28) {
+          hideChartTooltip();
+          return;
+        }
+
+        showChartTooltip(closest.point, rect);
+      }
+
+      function showChartTooltip(point, rect) {
+        const left = (point.x / elements.chart.width) * rect.width;
+        const top = (point.y / elements.chart.height) * rect.height;
+        const reading = point.reading;
+        const note = reading.note ? `<span>${escapeHtml(reading.note)}</span>` : "";
+        const dayType = point.specialDay ? "<span>Helg eller helligdag</span>" : "";
+
+        elements.chartTooltip.innerHTML = `
+          <strong>${formatValue(reading.value)} mmol/L</strong>
+          <span>${formatDisplayDate(reading.date)}</span>
+          <span>${escapeHtml(reading.context || "Annet")}</span>
+          ${note}
+          ${dayType}
+        `;
+        elements.chartTooltip.style.left = `${Math.max(12, Math.min(rect.width - 12, left))}px`;
+        elements.chartTooltip.style.top = `${Math.max(48, top)}px`;
+        elements.chartTooltip.hidden = false;
+      }
+
+      function hideChartTooltip() {
+        elements.chartTooltip.hidden = true;
+      }
+
+      function drawReferenceLine(ctx, y, width, padding, label) {
+        ctx.save();
+        ctx.setLineDash([6, 6]);
+        ctx.strokeStyle = "#d97b40";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#a95624";
+        ctx.fillText(label, width - padding.right + 5, y + 4);
+        ctx.restore();
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function addReading(event) {
+        event.preventDefault();
+        elements.message.textContent = "";
+
+        const numericValue = Number(elements.value.value.replace(",", "."));
+        if (!elements.date.value) {
+          elements.message.textContent = "Velg en dato.";
+          return;
+        }
+
+        if (!Number.isFinite(numericValue) || numericValue <= 0 || numericValue > 40) {
+          elements.message.textContent = "Skriv inn en gyldig verdi mellom 0 og 40 mmol/L.";
+          return;
+        }
+
+        const updatedReading = {
+          id: editingId || crypto.randomUUID(),
+          date: parseDateInput(elements.date.value).toISOString(),
+          value: Math.round(numericValue * 10) / 10,
+          context: elements.context.value,
+          note: elements.note.value.trim(),
+        };
+
+        if (editingId) {
+          readings = readings.map((reading) =>
+            reading.id === editingId ? updatedReading : reading
+          );
+          elements.message.textContent = "Målingen er oppdatert.";
+        } else {
+          readings.push(updatedReading);
+          elements.message.textContent = "Målingen er lagret.";
+        }
+
+        saveReadings();
+        resetForm();
+        render();
+      }
+
+      function resetForm() {
+        editingId = null;
+        elements.value.value = "";
+        elements.note.value = "";
+        elements.context.value = "Fastende";
+        elements.date.value = getLocalDateValue();
+        elements.submitButton.textContent = "Legg til måling";
+        elements.cancelEditButton.hidden = true;
+      }
+
+      function editReading(id) {
+        const reading = readings.find((item) => item.id === id);
+        if (!reading) return;
+
+        editingId = id;
+        elements.date.value = dateInputValue(reading.date);
+        elements.value.value = String(reading.value).replace(".", ",");
+        elements.context.value = reading.context || "Annet";
+        elements.note.value = reading.note || "";
+        elements.submitButton.textContent = "Lagre endring";
+        elements.cancelEditButton.hidden = false;
+        elements.message.textContent = "Redigerer valgt måling.";
+        elements.value.focus();
+        render();
+      }
+
+      function deleteReading(id) {
+        if (editingId === id) resetForm();
+        readings = readings.filter((reading) => reading.id !== id);
+        saveReadings();
+        render();
+      }
+
+      function normalizeReading(raw) {
+        const dateValue =
+          raw.date ?? raw.dato ?? raw.Date ?? raw.Dato ?? raw["Dato ISO"] ?? raw["date"];
+        const valueValue =
+          raw.value ??
+          raw.verdi ??
+          raw.Value ??
+          raw.Verdi ??
+          raw["Verdi mmol/L"] ??
+          raw["Blodsukker"];
+        const parsedDate = parseImportedDate(dateValue);
+        const numericValue = parseImportedNumber(valueValue);
+
+        if (!parsedDate || !Number.isFinite(numericValue) || numericValue <= 0 || numericValue > 40) {
+          return null;
+        }
+
+        return {
+          id: crypto.randomUUID(),
+          date: parsedDate.toISOString(),
+          value: Math.round(numericValue * 10) / 10,
+          context:
+            raw.context ??
+            raw.tidspunkt ??
+            raw.Context ??
+            raw.Tidspunkt ??
+            raw.Type ??
+            "Annet",
+          note: String(raw.note ?? raw.notat ?? raw.Note ?? raw.Notat ?? "").trim(),
+        };
+      }
+
+      function parseImportedDate(value) {
+        if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+        if (typeof value === "number" && Number.isFinite(value)) {
+          const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+          excelEpoch.setUTCDate(excelEpoch.getUTCDate() + Math.floor(value));
+          return parseDateInput(excelEpoch.toISOString().slice(0, 10));
+        }
+
+        const text = String(value ?? "").trim().toLowerCase();
+        if (!text) return null;
+        const withoutWeekday = text.replace(
+          /^(mandag|tirsdag|onsdag|torsdag|fredag|lørdag|lordag|søndag|sondag)\s+/,
+          ""
+        );
+        const isoMatch = withoutWeekday.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (isoMatch) return parseDateInput(`${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`);
+
+        const norwegianMatch = withoutWeekday.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
+        if (norwegianMatch) {
+          const day = norwegianMatch[1].padStart(2, "0");
+          const month = norwegianMatch[2].padStart(2, "0");
+          const year =
+            norwegianMatch[3].length === 2 ? `20${norwegianMatch[3]}` : norwegianMatch[3];
+          return parseDateInput(`${year}-${month}-${day}`);
+        }
+
+        const parsed = new Date(text);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+      }
+
+      function parseImportedNumber(value) {
+        if (typeof value === "number") return value;
+        return Number(String(value ?? "").trim().replace(",", "."));
+      }
+
+      function mergeReadings(imported) {
+        const existingKeys = new Set(readings.map(readingKey));
+        const unique = imported.filter((reading) => {
+          const key = readingKey(reading);
+          if (existingKeys.has(key)) return false;
+          existingKeys.add(key);
+          return true;
+        });
+
+        readings = [...readings, ...unique];
+        saveReadings();
+        render();
+        return unique.length;
+      }
+
+      function readingKey(reading) {
+        return [
+          formatExportDate(reading.date),
+          Number(reading.value).toFixed(1),
+          String(reading.context || "Annet").trim().toLowerCase(),
+          String(reading.note || "").trim().toLowerCase(),
+        ].join("|");
+      }
+
+      function parseDelimited(text) {
+        const firstLine = text.split(/\r?\n/, 1)[0] || "";
+        const delimiter = [";", "\t", ","].sort(
+          (a, b) => firstLine.split(b).length - firstLine.split(a).length
+        )[0];
+        const rows = [];
+        let row = [];
+        let cell = "";
+        let quoted = false;
+
+        for (let index = 0; index < text.length; index += 1) {
+          const char = text[index];
+          const next = text[index + 1];
+
+          if (char === '"' && quoted && next === '"') {
+            cell += '"';
+            index += 1;
+          } else if (char === '"') {
+            quoted = !quoted;
+          } else if (!quoted && char === delimiter) {
+            row.push(cell);
+            cell = "";
+          } else if (!quoted && (char === "\n" || char === "\r")) {
+            if (char === "\r" && next === "\n") index += 1;
+            row.push(cell);
+            if (row.some((item) => item.trim())) rows.push(row);
+            row = [];
+            cell = "";
+          } else {
+            cell += char;
+          }
+        }
+
+        row.push(cell);
+        if (row.some((item) => item.trim())) rows.push(row);
+        if (rows.length < 2) return [];
+
+        const headers = rows[0].map((header) => header.trim());
+        return rows.slice(1).map((values) => {
+          const item = {};
+          headers.forEach((header, index) => {
+            item[header] = values[index] ?? "";
+          });
+          return item;
+        });
+      }
+
+      async function importFile(file) {
+        elements.message.textContent = "";
+        elements.backupStatus.textContent = "";
+        const extension = file.name.split(".").pop().toLowerCase();
+
+        try {
+          const records =
+            extension === "xlsx" || extension === "xls"
+              ? await readExcelFile(file)
+              : parseDelimited(await file.text());
+          const imported = records.map(normalizeReading).filter(Boolean);
+          const count = mergeReadings(imported);
+          elements.backupStatus.textContent = count
+            ? `Importerte ${count} nye målinger fra ${file.name}.`
+            : "Fant ingen nye gyldige målinger i filen.";
+        } catch (error) {
+          elements.backupStatus.textContent = error.message || "Kunne ikke importere filen.";
+        } finally {
+          elements.importFile.value = "";
+        }
+      }
+
+      async function readExcelFile(file) {
+        const XLSX = await loadExcelLibrary();
+        const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        return XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+      }
+
+      async function loadExcelLibrary() {
+        if (window.XLSX) return window.XLSX;
+
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+          script.onload = resolve;
+          script.onerror = () =>
+            reject(
+              new Error(
+                "Excel-import krever nettilgang første gang. Eksporter gjerne Excel-arket som CSV og importer den filen i stedet."
+              )
+            );
+          document.head.appendChild(script);
+        });
+
+        return window.XLSX;
+      }
+
+      function exportCsv() {
+        const sorted = getSortedReadings();
+        if (!sorted.length) {
+          elements.backupStatus.textContent = "Det finnes ingen målinger å eksportere.";
+          return;
+        }
+
+        const header = ["Dato", "Ukedag", "Verdi mmol/L", "Tidspunkt", "Notat"];
+        const rows = sorted.map((reading) => [
+          formatExportDate(reading.date),
+          formatWeekday(reading.date),
+          String(reading.value).replace(".", ","),
+          reading.context || "Annet",
+          reading.note || "",
+        ]);
+        const csv = [header, ...rows]
+          .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(";"))
+          .join("\n");
+
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "blodsukkerdagbok.csv";
+        link.click();
+        URL.revokeObjectURL(url);
+        elements.backupStatus.textContent = "CSV-filen er eksportert.";
+      }
+
+      function createBackupPayload() {
+        return {
+          app: "Blodsukkerdagbok",
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          readings: getSortedReadings(),
+        };
+      }
+
+      async function saveCloudBackup() {
+        const backup = JSON.stringify(createBackupPayload(), null, 2);
+        const fileName = `blodsukkerdagbok-backup-${getLocalDateValue()}.json`;
+
+        if ("showSaveFilePicker" in window) {
+          try {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: fileName,
+              types: [
+                {
+                  description: "Blodsukkerdagbok backup",
+                  accept: { "application/json": [".json"] },
+                },
+              ],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(backup);
+            await writable.close();
+            elements.backupStatus.textContent =
+              "Backup lagret. Velg en mappe som synkes med skylagringen din for automatisk skybackup.";
+            return;
+          } catch (error) {
+            if (error.name === "AbortError") return;
+          }
+        }
+
+        downloadTextFile(backup, fileName, "application/json");
+        elements.backupStatus.textContent =
+          "Backupfilen er lastet ned. Flytt den til OneDrive, Google Drive eller Dropbox for skybackup.";
+      }
+
+      function downloadTextFile(text, fileName, type) {
+        const blob = new Blob([text], { type });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      async function restoreBackup(file) {
+        try {
+          const backup = JSON.parse(await file.text());
+          const imported = Array.isArray(backup.readings)
+            ? backup.readings.map(normalizeReading).filter(Boolean)
+            : [];
+          if (!imported.length) {
+            elements.backupStatus.textContent = "Backupfilen inneholder ingen gyldige målinger.";
+            return;
+          }
+
+          const confirmed = confirm(
+            "Vil du gjenopprette backupen? Dette erstatter målingene som ligger i appen nå."
+          );
+          if (!confirmed) return;
+
+          readings = imported;
+          saveReadings();
+          render();
+          elements.backupStatus.textContent = `Gjenopprettet ${readings.length} målinger fra backup.`;
+        } catch {
+          elements.backupStatus.textContent = "Kunne ikke lese backupfilen.";
+        } finally {
+          elements.backupFile.value = "";
+        }
+      }
+
+      function clearDiary() {
+        if (!readings.length) return;
+        const confirmed = confirm("Vil du slette alle registrerte målinger?");
+        if (!confirmed) return;
+        readings = [];
+        saveReadings();
+        render();
+      }
+
+      elements.date.value = getLocalDateValue();
+      elements.form.addEventListener("submit", addReading);
+      elements.rows.addEventListener("click", (event) => {
+        const editButton = event.target.closest("[data-edit-id]");
+        const deleteButton = event.target.closest("[data-delete-id]");
+        if (editButton) editReading(editButton.dataset.editId);
+        if (deleteButton) deleteReading(deleteButton.dataset.deleteId);
+      });
+      elements.cancelEditButton.addEventListener("click", () => {
+        resetForm();
+        elements.message.textContent = "Redigering avbrutt.";
+        render();
+      });
+      elements.importButton.addEventListener("click", () => elements.importFile.click());
+      elements.importFile.addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+        if (file) importFile(file);
+      });
+      elements.exportButton.addEventListener("click", exportCsv);
+      elements.clearButton.addEventListener("click", clearDiary);
+      elements.cloudBackupButton.addEventListener("click", saveCloudBackup);
+      elements.restoreBackupButton.addEventListener("click", () => elements.backupFile.click());
+      elements.backupFile.addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+        if (file) restoreBackup(file);
+      });
+      elements.chart.addEventListener("mousemove", handleChartHover);
+      elements.chart.addEventListener("mouseleave", hideChartTooltip);
+      elements.chart.addEventListener("blur", hideChartTooltip);
+      window.addEventListener("resize", () => renderChart(getSortedReadings()));
+
+      if ("serviceWorker" in navigator && location.protocol !== "file:") {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+      }
+
+      render();
+    </script>
+  </body>
+</html>
