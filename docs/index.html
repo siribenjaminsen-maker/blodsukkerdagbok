@@ -303,6 +303,10 @@
         height: 380px;
       }
 
+      #chart {
+        cursor: zoom-in;
+      }
+
       .chart-tooltip {
         position: absolute;
         z-index: 2;
@@ -327,6 +331,38 @@
       .chart-tooltip span {
         display: block;
         color: var(--muted);
+      }
+
+      .chart-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: grid;
+        place-items: center;
+        background: rgba(20, 33, 38, 0.62);
+        padding: 18px;
+      }
+
+      .chart-modal-panel {
+        width: min(1120px, 100%);
+        max-height: min(92vh, 760px);
+        overflow: auto;
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: 0 22px 70px rgba(20, 33, 38, 0.34);
+        padding: 18px;
+      }
+
+      .chart-modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .chart-modal canvas {
+        height: min(68vh, 560px);
       }
 
       .empty {
@@ -777,6 +813,19 @@
       </section>
     </main>
 
+    <div class="chart-modal" id="chartModal" role="dialog" aria-modal="true" aria-labelledby="chartModalTitle" hidden>
+      <div class="chart-modal-panel">
+        <div class="chart-modal-head">
+          <div>
+            <h2 id="chartModalTitle">Forstørret graf</h2>
+            <p class="hint">Rød: under 8 og over 13 mmol/L. Grønn: 8-13 mmol/L.</p>
+          </div>
+          <button class="button secondary" id="closeChartModal" type="button">Lukk</button>
+        </div>
+        <canvas id="largeChart" width="1200" height="560" aria-label="Forstørret blodsukkergraf"></canvas>
+      </div>
+    </div>
+
     <script>
       const STORAGE_KEY = "blodsukkerdagbok_v2";
 
@@ -795,6 +844,9 @@
         min: document.querySelector("#minStat"),
         max: document.querySelector("#maxStat"),
         chart: document.querySelector("#chart"),
+        largeChart: document.querySelector("#largeChart"),
+        chartModal: document.querySelector("#chartModal"),
+        closeChartModal: document.querySelector("#closeChartModal"),
         chartTooltip: document.querySelector("#chartTooltip"),
         chartEmpty: document.querySelector("#chartEmpty"),
         rows: document.querySelector("#readingRows"),
@@ -1005,20 +1057,28 @@
 
       function renderChart(sorted) {
         const canvas = elements.chart;
-        const ctx = canvas.getContext("2d");
-        const width = canvas.width;
-        const height = canvas.height;
-
         elements.chart.hidden = !sorted.length;
         elements.chartEmpty.hidden = Boolean(sorted.length);
         hideChartTooltip();
         chartPoints = [];
+
+        if (!sorted.length) {
+          canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+          return;
+        }
+
+        chartPoints = drawChart(canvas, sorted);
+      }
+
+      function drawChart(canvas, sorted) {
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+        const points = [];
         ctx.clearRect(0, 0, width, height);
 
-        if (!sorted.length) return;
-
         const values = sorted.map((reading) => Number(reading.value));
-        const maxValue = Math.max(10, Math.ceil(Math.max(...values) + 1));
+        const maxValue = Math.max(14, Math.ceil(Math.max(...values) + 1));
         const minValue = Math.min(0, Math.floor(Math.min(...values) - 1));
         const padding = { top: 24, right: 28, bottom: 52, left: 54 };
         const plotWidth = width - padding.left - padding.right;
@@ -1032,6 +1092,9 @@
           padding.top + ((maxValue - value) / (maxValue - minValue)) * plotHeight;
 
         ctx.font = "13px Inter, system-ui, sans-serif";
+        drawChartBand(ctx, yFor, padding, width, minValue, maxValue, 13, maxValue, "rgba(219, 92, 146, 0.11)");
+        drawChartBand(ctx, yFor, padding, width, minValue, maxValue, 8, 13, "rgba(18, 107, 99, 0.10)");
+        drawChartBand(ctx, yFor, padding, width, minValue, maxValue, minValue, 8, "rgba(219, 92, 146, 0.10)");
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#d8e0e4";
         ctx.fillStyle = "#5e6b72";
@@ -1066,7 +1129,7 @@
           const x = xFor(index);
           const y = yFor(Number(reading.value));
           const specialDay = isWeekendOrHoliday(reading.date);
-          chartPoints.push({ x, y, reading, specialDay });
+          points.push({ x, y, reading, specialDay });
           ctx.beginPath();
           ctx.fillStyle = "#ffffff";
           ctx.strokeStyle = specialDay ? "#db5c92" : "#126b63";
@@ -1085,6 +1148,18 @@
           }
         });
         ctx.textAlign = "left";
+        return points;
+      }
+
+      function drawChartBand(ctx, yFor, padding, width, minValue, maxValue, from, to, color) {
+        const lower = Math.max(minValue, from);
+        const upper = Math.min(maxValue, to);
+        if (upper <= lower) return;
+
+        const yTop = yFor(upper);
+        const yBottom = yFor(lower);
+        ctx.fillStyle = color;
+        ctx.fillRect(padding.left, yTop, width - padding.left - padding.right, yBottom - yTop);
       }
 
       function handleChartHover(event) {
@@ -1135,6 +1210,20 @@
 
       function hideChartTooltip() {
         elements.chartTooltip.hidden = true;
+      }
+
+      function openChartModal() {
+        const sorted = getSortedReadings();
+        if (!sorted.length) return;
+
+        hideChartTooltip();
+        elements.chartModal.hidden = false;
+        drawChart(elements.largeChart, sorted);
+        elements.closeChartModal.focus();
+      }
+
+      function closeChartModal() {
+        elements.chartModal.hidden = true;
       }
 
       function drawReferenceLine(ctx, y, width, padding, label) {
@@ -1623,6 +1712,14 @@
       elements.chart.addEventListener("mousemove", handleChartHover);
       elements.chart.addEventListener("mouseleave", hideChartTooltip);
       elements.chart.addEventListener("blur", hideChartTooltip);
+      elements.chart.addEventListener("click", openChartModal);
+      elements.closeChartModal.addEventListener("click", closeChartModal);
+      elements.chartModal.addEventListener("click", (event) => {
+        if (event.target === elements.chartModal) closeChartModal();
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !elements.chartModal.hidden) closeChartModal();
+      });
       window.addEventListener("resize", () => renderChart(getSortedReadings()));
 
       if ("serviceWorker" in navigator && location.protocol !== "file:") {
