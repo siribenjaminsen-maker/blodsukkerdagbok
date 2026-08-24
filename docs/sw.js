@@ -51,7 +51,7 @@ function redesign(text) {
   }
   return text;
 }
-async function transformed(response){const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;const text=redesign(await response.text());const headers=new Headers(response.headers);headers.delete('content-length');return new Response(text,{status:response.status,statusText:response.status.statusText,headers})}
+async function transformed(response){const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;const text=redesign(await response.text());const headers=new Headers(response.headers);headers.delete('content-length');return new Response(text,{status:response.status,statusText:response.statusText,headers})}
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(APP_FILES)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith((async()=>{try{const n=await fetch(e.request),r=await transformed(n);if(e.request.url.startsWith(self.location.origin)){const copy=r.clone();caches.open(CACHE_NAME).then(c=>c.put(e.request,copy))}return r}catch{const c=await caches.match(e.request)||await caches.match('./index.html');return c?transformed(c):Response.error()}})())});
