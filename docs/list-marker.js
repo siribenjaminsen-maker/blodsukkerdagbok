@@ -18,7 +18,7 @@
     tbody.querySelectorAll("tr").forEach(tr=>{
       const first=tr.querySelector("td:first-child");if(!first)return;const date=isoFromDisplay(first.textContent);if(!date)return;
       let badge=first.querySelector(".day-event-mark");if(markerDates.has(date)){if(!badge){badge=document.createElement("span");badge.className="day-event-mark";badge.textContent=" ◆";badge.style.cssText=`color:${COLOR};font-weight:900;font-size:1.05em`;first.appendChild(badge)}}else badge?.remove();
-      const cells=tr.querySelectorAll("td");if(cells.length>1){let dose=cells[1].querySelector(".insulin-row-dose");const units=effectiveDose(date);if(units!==null){if(!dose){dose=document.createElement("div");dose.className="insulin-row-dose";dose.style.cssText="font-size:.72rem;font-weight:700;color:#596b77;margin-top:2px";cells[1].appendChild(dose)}dose.textContent=`Insulin ${fmt(units)} E`}else dose?.remove()}
+      const cells=tr.querySelectorAll("td");if(cells.length>1){let dose=cells[1].querySelector(".insulin-row-dose");const units=effectiveDose(date);if(units!==null){if(!dose){dose=document.createElement("div");dose.className="insulin-row-dose";dose.style.cssText="font-size:.72rem;font-weight:700;color:#596b77;margin-top:2px";cells[1].appendChild(dose)}const text=`Insulin ${fmt(units)} E`;if(dose.textContent!==text)dose.textContent=text}else dose?.remove()}
     })
   }
   function refreshMarkerButton(){const btn=document.getElementById("dayMarkerBtn"),date=document.getElementById("date")?.value;if(btn)styleButton(btn,!!date&&markerDates.has(date))}
@@ -68,7 +68,7 @@
   async function init(){
     if(!window.supabase?.createClient)return;client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});const {data}=await client.auth.getSession();userId=data?.session?.user?.id||null;
     client.auth.onAuthStateChange((_e,s)=>{userId=s?.user?.id||null;if(userId){installUI();loadData()}});
-    if(!userId)return;installUI();await loadData();const tbody=document.getElementById("rows");if(tbody){observer=new MutationObserver(()=>decorateRows());observer.observe(tbody,{childList:true,subtree:true})}setInterval(loadData,30000);
+    if(!userId)return;installUI();await loadData();const tbody=document.getElementById("rows");if(tbody){observer=new MutationObserver(()=>decorateRows());observer.observe(tbody,{childList:true})}setInterval(loadData,30000);
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
