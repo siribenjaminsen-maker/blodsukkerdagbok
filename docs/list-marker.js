@@ -66,9 +66,12 @@
   }
 
   async function init(){
-    if(!window.supabase?.createClient)return;client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});const {data}=await client.auth.getSession();userId=data?.session?.user?.id||null;
-    client.auth.onAuthStateChange((_e,s)=>{userId=s?.user?.id||null;if(userId){installUI();loadData()}});
-    if(!userId)return;installUI();await loadData();const tbody=document.getElementById("rows");if(tbody){observer=new MutationObserver(()=>decorateRows());observer.observe(tbody,{childList:true})}setInterval(loadData,30000);
+    if(!window.supabase?.createClient)return;
+    client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+    const {data}=await client.auth.getSession();userId=data?.session?.user?.id||null;
+    if(!userId)return;
+    installUI();await loadData();
+    const tbody=document.getElementById("rows");if(tbody){observer=new MutationObserver(()=>decorateRows());observer.observe(tbody,{childList:true})}
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
