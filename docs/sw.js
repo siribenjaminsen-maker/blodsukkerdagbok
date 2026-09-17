@@ -1,4 +1,4 @@
-const CACHE_NAME="blodsukkerdagbok-v21";
+const CACHE_NAME="blodsukkerdagbok-v22";
 const APP_FILES=["./","./index.html","./manifest.webmanifest","./icon.svg","./list-marker.js"];
 const sp=(t,a,b,r)=>{const i=t.indexOf(a),j=t.indexOf(b,i);return i<0||j<0?t:t.slice(0,i)+r+t.slice(j)};
 function x(t){
